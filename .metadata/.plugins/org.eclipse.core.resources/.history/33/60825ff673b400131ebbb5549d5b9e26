@@ -1,0 +1,150 @@
+package inflatedViews;
+
+import java.util.ArrayList;
+
+import com.example.seg3.R;
+import com.example.seg3.ValueHolder;
+
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.text.Spannable;
+import android.text.style.ForegroundColorSpan;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.TextView;
+import android.widget.TextView.BufferType;
+
+public class questionWithCheckButtons extends LinearLayout implements
+		ValueHolder, View.OnClickListener {
+	public static View inflatedViewCheckBox;
+	public static LayoutInflater questionWithCheckBoxAnswers;
+	TextView question;
+	public static LinearLayout mainLayout;
+	private ArrayList<String> values = new ArrayList<String>();
+
+	public questionWithCheckButtons(Context context, String questionString,
+			Object[] checkBoxQuestions) {
+		super(context);
+	}
+
+	public View inflator(Context context, String questionText,
+			Object[] checkBoxQuestions) {
+
+		questionWithCheckBoxAnswers = LayoutInflater.from(getContext());
+
+		inflatedViewCheckBox = questionWithCheckBoxAnswers.inflate(
+				R.layout.question_with_open_check_buttons_layout, mainLayout,
+				false);
+
+		setQuestionCheckBox(questionText);
+
+		setAnswerCheckButtons(context, checkBoxQuestions);
+
+		return inflatedViewCheckBox;
+
+	}
+
+	public void setQuestionCheckBox(String questionText) {
+		TextView textView1 = (TextView) inflatedViewCheckBox
+				.findViewById(R.id.textView2ForInflation);
+		textView1.setText(questionText, BufferType.SPANNABLE);
+
+		Spannable s = (Spannable) textView1.getText();
+		ForegroundColorSpan fcs = new ForegroundColorSpan(Color.BLUE);
+
+		AssetManager mngr = getContext().getAssets();
+		Typeface face = Typeface.createFromAsset(mngr,
+				"fonts/Roboto-Regular.ttf");
+		textView1.setTypeface(face);
+
+		s.setSpan(fcs, 0, questionText.length(),
+				Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+	}
+
+	public void setAnswerCheckButtons(Context context,
+			Object[] checkButtonQuestions) {
+
+		AssetManager mngr = getContext().getAssets();
+		Typeface face = Typeface.createFromAsset(mngr,
+				"fonts/Roboto-Regular.ttf");
+
+		LinearLayout layoutForCheckBoxInflation = (LinearLayout) inflatedViewCheckBox
+				.findViewById(R.id.LinearLayoutForCheckBoxes);
+
+		CheckBox[] cb = new CheckBox[checkButtonQuestions.length];
+
+		for (int i = 0; i < checkButtonQuestions.length; i++) {
+			Drawable backgroundOff = questionWithCheckButtons.this.getResources().getDrawable(
+					R.drawable.btn_check_off_focused_holo_light);
+			cb[i].setBackgroundDrawable(backgroundOff);
+
+			cb[i] = new CheckBox(context);
+			cb[i].setText(checkButtonQuestions[i].toString(),
+					BufferType.SPANNABLE);
+
+			Spannable s = (Spannable) cb[i].getText();
+			ForegroundColorSpan fcs = new ForegroundColorSpan(Color.BLACK);
+			cb[i].setTypeface(face);
+
+			s.setSpan(fcs, 0, cb[i].getText().length(),
+					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		
+			
+			layoutForCheckBoxInflation.addView(cb[i]);
+			
+		}
+		for (int i = 0; i < checkButtonQuestions.length; i++) {
+			cb[i].setOnClickListener(this);
+			cb[i].setOnClickListener(new OnClickListener(){
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					if(((CompoundButton) v).isChecked()==false){
+						Drawable backgroundOff = questionWithCheckButtons.this.getResources().getDrawable(
+								R.drawable.btn_check_off_focused_holo_light);
+						v.setBackgroundDrawable(backgroundOff);}
+						if(((CompoundButton) v).isChecked()==true){
+							Drawable backgroundOn = questionWithCheckButtons.this.getResources().getDrawable(
+									R.drawable.btn_check_on_focused_holo_light);
+							v.setBackgroundDrawable(backgroundOn);}
+							
+				}
+				
+			});
+			
+		}
+
+	}
+
+	@Override
+	public String getValue() {
+		String toReturn = "";
+		for (int i = 0; i < values.size(); i++) {
+			toReturn += values.get(i);
+			if (i != values.size() - 1)
+				toReturn += ", ";
+		}
+		return toReturn;
+	}
+
+	@Override
+	public void onClick(View v) {
+		CheckBox btn = (CheckBox) v;
+		String checkBoxString = btn.getText().toString();
+		if (!values.contains(checkBoxString))
+			values.add(checkBoxString);
+		else
+			values.remove(checkBoxString);
+	}
+
+}

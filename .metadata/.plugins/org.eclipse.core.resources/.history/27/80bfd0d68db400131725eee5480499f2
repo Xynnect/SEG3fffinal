@@ -1,0 +1,222 @@
+package com.example.seg3;
+
+import java.util.ArrayList;
+
+import pl.polidea.view.ZoomView;
+import inflatedViews.questionWithCheckButtons;
+import inflatedViews.questionWithOpenTextView;
+import inflatedViews.questionWithRadioButtons;
+import inflatedViews.questionWithSeekBar;
+import inflatedViews.questionWithSpinner;
+import Servers.ServerForAnswers;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+
+public class withoutAppointment extends Activity {
+	private static LinearLayout mainLayout;
+	private static String personName;
+	private static String questionaireNumber;
+	private static String DateOfBirth;
+	private ArrayList<String> answersToSend=new ArrayList<String>();
+	private ArrayList<ValueHolder> buttons=new ArrayList<ValueHolder>();
+	private static ArrayList<String> questions;
+	private static ArrayList<String> questionTypes;
+	private static ArrayList<String> answers;
+	private Button submitButton;
+	private LinearLayout main_container;
+	
+
+	
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		//Server sr = new Server();
+		
+		
+		
+		setContentView(R.layout.without_appointment);
+		
+		//personName=((EditText)findViewById(R.id.editText1)).getText().toString();
+		//DateOfBirth=((EditText)findViewById(R.id.editText2)).getText().toString();
+		//questionaireNumber=getIntent().getStringExtra("questionaire");
+		submitButton = new Button(this);
+		submitButton.setText("sd");
+		
+		submitButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				for(int i=0;i<buttons.size();i++){
+					
+					answersToSend.add(buttons.get(i).getValue());
+				}
+				for(int i=0;i<answersToSend.size();i++){
+					Log.i("ELEMENT", answersToSend.get(i));
+				}
+				ServerForAnswers srv=new ServerForAnswers(personName,DateOfBirth, questionaireNumber, questions, answersToSend);
+				srv.start();
+				new AlertDialog.Builder(withoutAppointment.this)
+			    .setTitle("Thank you!")
+			    .setMessage("Your questionnaire was submitted successfully!")
+			    .setNeutralButton("OK",new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					withoutAppointment.this.finish();
+					}
+				}).show();
+				
+			}
+		});
+		makeZoomable();
+		main_container.addView(submitButton);
+		mainLayout = (LinearLayout) findViewById(R.id.LinearLayoutForInflationWA);
+		//mainLayout.addView(submitButton);
+		
+		
+		Intent i=getIntent();
+		//Getting PersonName and QuestionaireNUmber
+		//personName=i.getStringExtra("name");
+		questionaireNumber=i.getStringExtra("Questionaire Name");
+		
+		//Getting the bundle from the intent where all the information is
+		Bundle b= i.getExtras();
+		questions=b.getStringArrayList("questions");
+		questionTypes=b.getStringArrayList("questionType");
+		answers=b.getStringArrayList("answers");
+		setQuestions(questions,questionTypes,answers);
+		
+		
+		
+	}
+	
+
+	
+
+	
+
+
+
+	private void setQuestions(ArrayList<String> questions2,
+			ArrayList<String> questionTypes2, ArrayList<String> answers2) {
+		// TODO Auto-generated method stub	
+		for(int i=0;i<questions2.size();i++){
+			Log.i("ANSWER",answers2.get(i));
+			ArrayList<String> answ=new ArrayList<String>();
+			String[] toUse=answers2.get(i).split("mmm");
+			for(int z=0;z<toUse.length;z++){
+				answ.add(toUse[z]);
+			}
+			
+			if(questionTypes2.get(i).equals("RB")){
+				questionWithRadioButtons(questions2.get(i), answ);
+			}
+			else if(questionTypes2.get(i).equals("CB")){
+				questionWithCheckButtons(questions2.get(i), answ);
+			}
+			else if(questionTypes2.get(i).equals("OT")){
+				setQuestionWithOpenTextView(questions2.get(i));
+			}
+			else if(questionTypes2.get(i).equals("SP")){
+				questionWithSpinner(questions2.get(i), answ);
+			}
+		}		
+		
+		
+	}
+
+
+
+
+
+
+
+
+	public void setQuestionWithOpenTextView(String questionText) {
+		questionWithOpenTextView questionTextView = new questionWithOpenTextView(
+				getApplicationContext(), questionText);
+		buttons.add(questionTextView);
+		mainLayout.addView(questionTextView.inflator(questionText));
+	}
+
+	public void questionWithRadioButtons(String questionText,
+			ArrayList<String> answerText) {
+		questionWithRadioButtons questionRadioButtons = new questionWithRadioButtons(
+				getApplicationContext(), questionText, answerText);
+		buttons.add(questionRadioButtons);
+		mainLayout.addView(questionRadioButtons.inflator(
+				getApplicationContext(), questionText, answerText));
+
+	}
+
+	public void questionWithCheckButtons(String questionText,
+			ArrayList<String> answerText) {
+		questionWithCheckButtons questionCheckButtons = new questionWithCheckButtons(
+				getApplicationContext(), questionText, answerText.toArray());
+		buttons.add(questionCheckButtons);
+		mainLayout.addView(questionCheckButtons.inflator(
+				getApplicationContext(), questionText,  answerText.toArray()));
+	}
+
+	public void questionWithSpinner(String questionText,
+			ArrayList<String> answerText) {
+		questionWithSpinner questionWithSpinner = new questionWithSpinner(
+				getApplicationContext(), questionText, answerText);
+		buttons.add(questionWithSpinner);
+		mainLayout.addView(questionWithSpinner.inflator(
+				getApplicationContext(), questionText, answerText));
+	}
+
+	public void questionWithSeekBar(String questionText,
+			ArrayList<String> answerText) {
+		questionWithSeekBar questionWithSeekBar = new questionWithSeekBar(
+				getApplicationContext(), questionText,
+				Integer.parseInt(answerText.get(0)),
+				Integer.parseInt(answerText.get(1)));
+		mainLayout.addView(questionWithSeekBar.inflator(
+				getApplicationContext(), questionText,
+				Integer.parseInt(answerText.get(0)),
+				Integer.parseInt(answerText.get(1))));
+	}
+
+		
+	//makes the starting activity zoomable
+			public void makeZoomable(){
+				Display display = getWindowManager().getDefaultDisplay(); 
+				int width = display.getWidth();  // deprecated
+				int height = display.getHeight();  // deprecated
+				
+				//LinearLayout linlay = (LinearLayout) findViewById(R.id.linlay);
+				 main_container = (LinearLayout) findViewById(R.id.LinearLayoutforZooming);
+				 main_container.removeAllViews();
+				View v = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+						.inflate(R.layout.without_appointment, null, false);
+				v.setLayoutParams(new LinearLayout.LayoutParams(
+						width, height-100));
+				
+				ZoomView zoomView = new ZoomView(this);
+				zoomView.addView(v);
+					
+				
+				main_container.addView(zoomView);	
+				
+		
+				
+				
+			}
+
+}

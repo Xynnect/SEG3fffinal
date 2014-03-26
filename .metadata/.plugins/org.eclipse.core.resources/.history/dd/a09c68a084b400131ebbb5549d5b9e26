@@ -1,0 +1,131 @@
+package inflatedViews;
+
+import java.util.ArrayList;
+
+import com.example.seg3.R;
+import com.example.seg3.ValueHolder;
+
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.style.ForegroundColorSpan;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.TextView.BufferType;
+
+public class questionWithRadioButtons extends LinearLayout implements ValueHolder,View.OnClickListener{
+	public static View inflatedViewRadioButtons;
+	public static LayoutInflater questionWithRadioButtonsAnswers;
+	TextView question;
+	public static LinearLayout mainLayout;
+	private RadioButton[] rb ;
+	private String value="";
+	private String[] texts;
+	private int count=0;
+
+	public questionWithRadioButtons(Context context, String questionString,
+			ArrayList<String> radioButtonQuestions) {
+		super(context);
+	}
+
+	public View inflator(Context context, String questionText,
+			ArrayList<String> radioButtonQuestions) {
+
+		questionWithRadioButtonsAnswers = LayoutInflater.from(getContext());
+
+		
+		inflatedViewRadioButtons = questionWithRadioButtonsAnswers.inflate(
+				R.layout.question_with_open_radio_buttons_layout, mainLayout,
+				false);
+		
+		RadioGroup rg1 = (RadioGroup) inflatedViewRadioButtons
+				.findViewById(R.id.radioGroup1);
+		
+		setQuestionRadioButtons(questionText);
+		
+		rg1.addView(setAnswerRadioButtons(context, radioButtonQuestions));
+
+		
+
+		return inflatedViewRadioButtons;
+
+	}
+	public String getValue(){
+		return value;
+	}
+	public void setQuestionRadioButtons(String questionText) {
+		TextView textView1 = (TextView) inflatedViewRadioButtons
+				.findViewById(R.id.textView1ForInflation);
+		textView1.setText(questionText, BufferType.SPANNABLE);
+
+		Spannable s = (Spannable) textView1.getText();
+		ForegroundColorSpan fcs = new ForegroundColorSpan(Color.BLUE);
+
+		AssetManager mngr = getContext().getAssets();
+		Typeface face = Typeface.createFromAsset(mngr,
+				"fonts/Roboto-Regular.ttf");
+		textView1.setTypeface(face);
+
+		s.setSpan(fcs, 0, questionText.length(),
+				Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+	}
+
+	public RadioGroup setAnswerRadioButtons(Context context,
+			ArrayList<String> radioButtonQuestions) {
+		
+		RadioGroup rg = new RadioGroup(context);
+
+		AssetManager mngr = getContext().getAssets();
+		Typeface face = Typeface.createFromAsset(mngr,
+				"fonts/Roboto-Regular.ttf");
+		
+		
+
+		rb = new RadioButton[radioButtonQuestions.size()];
+		texts=new String[radioButtonQuestions.size()];
+		
+		
+		for (int i = 0; i < radioButtonQuestions.size(); i++) {
+			rb[i] = new RadioButton(context);
+			rb[i].setText(radioButtonQuestions.get(i), BufferType.SPANNABLE);
+			
+			Spannable s = (Spannable) rb[i].getText();
+			ForegroundColorSpan fcs = new ForegroundColorSpan(Color.BLACK);
+			rb[i].setTypeface(face);
+			texts[i]=rb[i].getText().toString();
+			s.setSpan(fcs, 0, rb[i].getText().length(),
+					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			
+			rg.addView(rb[i]);
+		}
+		for(int i=0;i<rb.length;i++){
+			
+			rb[i].setOnClickListener(this);
+		}
+		return rg;
+
+	}
+	public int getAnswerNum(){
+		return rb.length;
+	}
+	
+	public RadioButton getRadioButton(int i){
+		return rb[i];
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		value=((RadioButton)v).getText().toString();
+		Log.i("Val", "Value  "+value);
+	}
+
+}
